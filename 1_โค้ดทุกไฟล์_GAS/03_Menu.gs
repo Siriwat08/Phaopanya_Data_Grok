@@ -2,6 +2,11 @@
  * Menu — เมนูระบบ SCG/JWD
  * เวอร์ชันปลอดภัย: ไม่สร้างหรือเปลี่ยนหัวคอลัมน์ของผู้ใช้
  *
+ * [v5.5.9 PATCH-7] แก้ไข uiRunMaster() ให้ load geo index ก่อนเรียก geoParse()
+ *   - ปัญหา: ปุ่ม 1 เรียก geoParse_() แต่ geo cache ยังไม่มี → crash / null result
+ *   - แก้: เพิ่ม ensureGeoMaps_() ให้ uiRunMaster() โหลด cache ก่อน runMaster()
+ *   - ผลลัพธ์: PROVINCE/AMPHOE/CONFIRMED_BY/REVIEW_NOTE เขียนเสร็จตัวแรก (เดิมต้องรอปุ่ม 3)
+ *
  * [v5.5.6 PATCH-6] อัปเดตผลข้อความของปุ่ม 3 / 3b / 1+3 แสดงตัวชี้วัดใหม่จาก GeoService v5.5.6
  *   - Y แช่แข็ง (EN สะอาด ไม่ถูกทับ) = yFrozen | Y อัปเกรด (ขยะ→EN) = yUpgraded
  *   - ต้องวางคู่กับ 04_GeoService_v5.5.6.gs (PATCH-6 นโยบาย Upgrade-only)
@@ -9,7 +14,7 @@
  *
  * [v5.5.4 PATCH-5] เพิ่มปุ่ม "🧹 ล้างเฉพาะ 7 คอลัมน์ราชการ (U-AA)" ใน submenu "ดูผล / รีเซ็ต"
  *   - ไปทำงานกับฟังก์ชัน uiClearGeoColumnsOnly() ใน 04_GeoService_v5.5.4.gs
- *   - ใช้คู่กับปุ่ม 3/3b: ล้างก่อน → เติมใหม่ จะได้ค่าที่ถูกต้องตามตรรกะ v5.5.4 ทั้งชีต
+ *   - ใช้คู่กับปุ่ม 3/3b: ล้างก่อน → เติมใหม่ จะได้ค่าที่ถูกต้องตามตรรกะ v5.5.4 ท[...]
  *   - นอกจากนี้ไม่มีการเปลี่ยนแปลงใด ๆ จาก v5.5.3
  */
 
@@ -126,9 +131,21 @@ function loadLastResult_() {
   }
 }
 
+/**
+ * uiRunMaster — ปุ่ม 1: สะสมฐาน MASTER
+ * [v5.5.9 PATCH-7 FIX] เพิ่ม ensureGeoMaps_() เพื่อให้ geoParse_() ใช้ geo cache
+ *   - เดิม: runMaster() เรียก geoParse_() แต่ geo index ยังไม่โหลด → null result
+ *   - ใหม่: ensureGeoMaps_() โหลด cache ก่อน → PROVINCE/AMPHOE/CONFIRMED_BY/REVIEW_NOTE เต็ม
+ *   - ผลลัพธ์: ปุ่ม 1 ตอนนี้เขียน N/O/P/Q แบบเสร็จสิ้น ไม่ต้องรอปุ่ม 3
+ */
 function uiRunMaster() {
   // [v5.5.2] try/catch + แสดง skipped/TIME_GUARD — กัน error เงียบและรันไม่ครบโดยไม่รู้
   try {
+    // [v5.5.9 PATCH-7] โหลด geo index ก่อน runMaster() — ให้ geoParse_() ใช้ได้
+    if (typeof ensureGeoMaps_ === 'function') {
+      ensureGeoMaps_();
+    }
+
     const stats = runMaster(Infinity);
     LAST_RESULT = stats;
     saveLastResult_(stats);
@@ -139,7 +156,7 @@ function uiRunMaster() {
     if (stats.timeGuard) {
       msg += '\n\n⚠️ TIME_GUARD: เวลาหมดก่อนจบ — กดปุ่ม 1 อีกครั้งเพื่อทำต่อ';
     } else if ((stats.skipped || 0) > 0 && stats.processed === 0) {
-      msg += '\n\nℹ️ ข้ามทุกแถวเพราะมี MD_LINK+MATCH_KEY แล้ว — ถ้าต้องการรันใหม่ให้ใช้รีเซ็ตฐาน MASTER ก่อน';
+      msg += '\n\nℹ️ ข้ามทุกแถวเพราะมี MD_LINK+MATCH_KEY แล้ว — ถ้าต้องการรันใหม่ให้ใช้รีเซ็ต';
     }
     SpreadsheetApp.getUi().alert(msg);
   } catch (e) {
@@ -162,7 +179,7 @@ function uiRunMasterGeo() {
     if (stats.timeGuard) {
       msg += '\n\n⚠️ TIME_GUARD: เวลาหมดก่อนจบ — กดปุ่ม 3 อีกครั้งเพื่อทำต่อ';
     } else if (stats.processed > 0 && stats.filled === 0) {
-      msg += '\n\nℹ️ ไม่มีแถวแมชต์ได้ — ตรวจ SYS_TH_GEO / ข้อความที่อยู่ / กดล้าง Cache แล้วลองใหม่';
+      msg += '\n\nℹ️ ไม่มีแถวแมชต์ได้ — ตรวจ SYS_TH_GEO / ข้อความที่อยู่ / กดล้าง Cache แล้วลองอีกครั้ง';
     }
     SpreadsheetApp.getUi().alert(msg);
   } catch (e) {
@@ -204,6 +221,7 @@ function uiRunMasterGeoEn() {
  *  [v5.1 NEW-001 FIX] ใช้ shared time budget 4.5 นาที (ปลอดภัยกว่า 5+5=10 นาที ที่เกิน GAS hard limit 6 นาที)
  *  - runMaster: ให้ 2.5 นาที (เผื่อเวลาให้ runMasterGeo)
  *  - runMasterGeo: ใช้เวลาที่เหลือ (ถ้าเหลือ < 30 วิ → หยุด บังคับให้กดปุ่ม 3 แยก)
+ *  - [v5.5.9 PATCH-7] โหลด geo index ก่อน runMaster()
  */
 function uiRunMasterAndGeo() {
   // GAS hard limit = 6 นาที — กันเผื่อด้วย 4.5 นาที (margin 1.5 นาที สำหรับ alert + cleanup)
@@ -213,6 +231,11 @@ function uiRunMasterAndGeo() {
   const MIN_REMAINING_MS = 30 * 1000;
 
   try {
+    // [v5.5.9 PATCH-7] โหลด geo index ก่อน runMaster() — แบ่งปัน cache กับ runMasterGeo
+    if (typeof ensureGeoMaps_ === 'function') {
+      ensureGeoMaps_();
+    }
+
     const wallStart = Date.now();
     const s1 = runMaster(Infinity, MASTER_BUDGET_MS);
     const elapsedMs = Date.now() - wallStart;
