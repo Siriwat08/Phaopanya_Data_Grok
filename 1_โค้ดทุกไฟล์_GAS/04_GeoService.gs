@@ -1,13 +1,13 @@
 /**
- * GeoService v5 — แยกพิกัดทางราชการ (รหัสไปรษณีย์ / จ. / อ.-ค. / ต.-ข.) จาก "ชื่อที่อยู่จาก_LatLong"
+ * GeoService v5 — แยกพิกัดทางราชการ (รหัสไปรษณีย์ / จ. / อ.-ค. / ต.-ข.) จาก "ชื่อที่อยู่จาก_LatLong" 
  * โดยเทียบกับพจนานุกรม SYS_TH_GEO (ฐานข้อมูลการปกครองไทย + รหัสไปรษณีย์)
  *
  * [v5.5.6 PATCH-6] นโยบาย Upgrade-only สำหรับ Y (Reversegeocode) แทน "latest snapshot"
  *   ปัญหา: ปุ่ม 3/3b กับแถวที่เติมแล้ว (มี GEO_LAYER) — U/V/W/X/AA แช่แข็ง แต่ Y/Z
- *   ถูกคัดลอกจาก SOURCE แถวล่าสุดทุกครั้งที่รัน → ที่อยู่ EN สะอาดโดนทับด้วยข้อความ
+ *   ถูกคัดลอกจาก SOURCE แถวล่าสุดทุกครั้งที่รัน → ที่อยู่ EN สะอาดโดนทับด้วยขยะ
  *   ใหม่ที่อาจเป็นไทย/Plus Code/GeoErr และ X (ตำบล) กับ Y (ที่อยู่เต็ม) ขัดแย้งกัน
  *   หลักฐานจากข้อมูลจริง (PPY_LMDS_SCGJWD_test2): สถานที่ส่งซ้ำ 609/2,669 |
- *   Google คืนที่อยู่ต่างกันระหว่างการส่งแต่ละครั้ง 339 แห่ง | ตำบลต่างกันเลย 23 แห่ง
+ *   Google คืนที่อยู่ต่างกันระหว่างการส่งแต่ละครั้ง 339 แห่ง | ตำบลต่างกันเลย 2
  *   กติกาใหม่ (B. Upgrade-only):
  *     - Y เป็น EN สะอาดอยู่แล้ว → ห้ามถูกทับเด็ดขาด (แช่แข็ง)
  *     - Y เป็นขยะ (ไทย/Plus Code/GeoErr/ว่าง) → อัปเกรดอัตโนมัติด้วย EN สะอาด "ล่าสุด"
@@ -23,9 +23,9 @@
  *   และรหัสนั้นตรงกับแถวใน SYS_TH_GEO ของตำบลนั้น (ผ่าน pickRowByPostal_ ชั้น 1-2)
  *   แก้: ถ้ารหัสในข้อความ == รหัสของแถว dict ที่แมชต์ → เติมได้ เลเยอร์ = CN_ZIP_OK(_EN)
  *   ผลทดสอบ (PPY_LMDS_SCGJWD_test 2,669 แถว): CHECK_NOTE 178 → เหลือ 20
- *   เติมสำเร็จ 92.8% → 98.7% | ที่ไม่ผ่าน (Google ให้รหัสไม่ตรงเซต 11 + ไม่มีชื่อตำบล 9) ยังบล็อกเหมือนเดิม
+ *   เติมสำเร็จ 92.8% → 98.7% | ที่ไม่ผ่าน (Google ให้รหัสไม่ตรงเซต 11 + ไม่มีชื่อตำบล 9) ยั
  * [v5.5.4 PATCH-5] เพิ่ม uiClearGeoColumnsOnly() — ล้างเฉพาะ 7 คอลัมน์ U-AA ทั้งชีต
- *   ใช้ก่อนรันปุ่ม 3/3b ใหม่ เพื่อให้แถวที่เคยเติมผิด (รอบรันเก่า) ได้ค่าใหม่
+ *   ใช้ก่อนรันปุ่ม 3/3b ใหม่ เพื่อให้แถวที่เคยเติมผิด (รอบรันเก่า) ได้ค่าให้
  *   (ปกติระบบ skip แถวที่มี GEO_LAYER อยู่แล้ว — ค่าเก่าผิดจะค้างถ้าไม่ล้าง)
  *
  * v5 = v4 + 2 Bug fixes + 1 logic change
@@ -37,9 +37,9 @@
  *   3) [v5 LOGIC] ปุ่ม 3 เขียนเฉพาะ 7 คอลัมน์ U-AA (Rahatpraisanee..GEO_LAYER) เท่านั้น
  *      CONFIRMED_BY (P) และ REVIEW_NOTE (Q) ย้ายไปเป็นของปุ่ม 1 (runMaster) เขียนจาก [ที่อยู่ปลายทาง]
  *
- * v4 = ยืมเทคนิคจาก ThGeoService ของโปรเจกต์อื่น + คง regex คำนำหน้าเป็นหลัก (improve ล้วน ถดถอย 0)
+ * v4 = ยืมเทคนิคจาก ThGeoService ของโปรเจกต์อื่น + คง regex คำนำหน้าเป็นหลัก (improve ล้วน ถด
  *   1) scan จังหวัด/อำเภอ/ตำบล จากชื่อที่มีจริงใน SYS_TH_GEO (1-hit rule) ใช้เป็น fallback
- *      เมื่อข้อมูลไม่มีคำนำหน้า "จ./อ./ต." กำกับ (แก้ปัญหาแถว Plus Code/รหัสหาย — เช่น '60 เมือง นนทบุรี 11000')
+ *      เมื่อข้อมูลไม่มีคำนำหน้า "จ./อ./ต." กำกับ (แก้ปัญหาแถว Plus Code/รหัสหาย — เช่
  *   2) เพิ่มชั้น POSTAL_AMPHOE (รหัส + อำเภอ) — แมชต์เพิ่ม 242 แถว
  *   3) CacheService 6 ชม. + batch เขียนทีละ 500 แถว (กัน Timeout ชีตใหญ่)
  *   4) เพิ่มชั้น fuzzy TAMBON_FUZZY/AMPHOE_FUZZY (bigram >= 0.80) — แก้แถวสะกดเพี้ยน (เช่น "สำรีจชรใหญ่")
@@ -52,7 +52,7 @@
  *   Y Reversegeocode    = คัดลอก "ชื่อที่อยู่จาก_LatLong" ตรง ๆ
  *   Z Calculatedistances= คัดลอก "ระยะทางจากคลัง_Km" (col Y ของ MASTER_PLACE) ตรง ๆ
  *   AA GEO_LAYER        = ชั้นที่แมชต์ได้ (EXACT3/POSTAL_RHSTB/POSTAL_AMPHOE/TAMBON_PROV/AMPHOE_PROV/TAMBON_FUZZY/AMPHOE_FUZZY)
- *                        [v5.5.4] CN_ZIP_OK(_EN) = ตำบล CHECK_NOTE แต่รหัสในข้อความยืนยันแล้ว / CHECK_NOTE = ยังต้องตรวจมือ
+ *                        [v5.5.4] CN_ZIP_OK(_EN) = ตำบล CHECK_NOTE แต่รหัสในข้อความยืนยันแล้ว / CHECK_NOTE = ยังต้องต
  *
  * Logic เทียบ SYS_TH_GEO (7 ชั้น, หยุดทันทีที่เจอ):
  *   1) EXACT3        = ต.+อ.+จ. เทียบ search_key (col M)
@@ -64,9 +64,9 @@
  *   7) AMPHOE_FUZZY  = fuzzy อำเภอ (bigram >= 0.80 กรองตามจังหวัด) — แก้สะกดเพี้ยน
  *
  * *** สำคัญ (ความต้องการจริง): ***
- *   1) แมชต์จากพจนานุกรมได้ → ใช้ข้อความมาตรฐานที่สะอาดแล้วจาก SYS_TH_GEO ลงฐานเสมอ
- *   2) ไม่แมชต์กับพจนานุกรม → 4 คอลัมน์ราชการเว้นว่าง ไม่บันทึกค่าผิดลงฐาน
- *   3) คอลัมน์ GEO_LAYER บันทึกชั้นที่แมชต์ได้ — ตรวจสอบกลับได้ว่าแต่ละค่ามาจากพจนานุกรมชั้นไหน
+ *   1) แมชต์จากพจนานุกรมได้ → ใช้ข้อความมาตรฐานที่สะอาดแล้วจาก SYS_TH_GEO ลงฐาน
+ *   2) ไม่แมชต์กับพจนานุกรม → 4 คอลัมน์ราชการเว้นว่าง ไม่บันทึกค่าผิดลงฐา
+ *   3) คอลัมน์ GEO_LAYER บันทึกชั้นที่แมชต์ได้ — ตรวจสอบกลับได้ว่าแต่ละค่ามาจา
  *
  * ทดสอบด้วยข้อมูลจริง 13,935 แถว × SYS_TH_GEO ของจริง (7,536 แถว):
  *   v3: 99.4% (89 เว้นว่าง) → v4: 99.6% (แมชต์ 13,881 / เว้นว่าง 54 = 0.4%) / ถดถอย 0
@@ -84,8 +84,8 @@ const TH_GEO_SHEET = SHEETS.GEO_DICT;  // 'SYS_TH_GEO'
 // เดิม v5.2 ใช้ key เดียว 'geo_v52_idx_32col_en' → JSON เกิน 90KB → cache.put() ไม่ทำงาน
 // [v5.5.0 FIX landmine] เปลี่ยนชื่อ key geo_v53_* → geo_v55_* + ฝังเวอร์ชันใน payload
 //   เหตุผล: format key ใน index เปลี่ยนตั้งแต่ v5.4.5 (delimiter + norm) แต่ชื่อ cache ยังเดิม
-//   วันนี้ put ถูก skip เสมอ (เกิน 90KB) จึงยังไม่เป็นอันตราย — แต่ถ้าอนาคตย่อ index จน put สำเร็จ
-//   cache เก่ารุ่น space-delimiter จะทำให้ Dead Layer กลับมาโดยไม่รู้ตัว จึงตัดตอนนี้เสียก่อน
+//   วันนี้ put ถูก skip เสมอ (เกิน 90KB) จึงยังไม่เป็นอันตราย — แต่ถ้าอนาคตย่อ index จน
+//   cache เก่ารุ่น space-delimiter จะทำให้ Dead Layer กลับมาโดยไม่รู้ตัว จึงตัดตอนนี้เสียก่า
 const TH_GEO_CACHE_KEY_TH = 'geo_v55_th_idx';
 const TH_GEO_CACHE_KEY_EN = 'geo_v55_en_idx';
 const GEO_IDX_VER = 2;               // เวอร์ชันโครงสร้าง index — บังคับเปลี่ยนทุกครั้งที่แก้ format key
@@ -95,7 +95,7 @@ const TH_GEO_CACHE_S = 6 * 3600; // cache 6 ชม. (ตาม pattern ThGeoServ
 // [v5.5.0] Alias จังหวัด EN — Google reverse geocode คืน "Krung Thep Maha Nakhon"
 // แต่พจนานุกรม SYS_TH_GEO ใช้ "Bangkok" → ลงทะเบียน index ทั้ง 2 ชื่อ (สองทิศทาง)
 //   หลักฐาน: MASTER_PLACE แถวที่ 268 ข้อความ "...Khet Thung Khru, Krung Thep Maha Nakhon 10100"
-//   เดิม layer EN 1/4/5 ไม่เคย match จังหวัดนี้ (รอดมาได้เพราะชั้น 2 รหัส+ตำบล ซึ่งไม่แตะจังหวัด)
+//   เดิม layer EN 1/4/5 ไม่เคย match จังหวัดนี้ (รอดมาได้เพราะชั้น 2 รหัส+ตำบล ซึ่งไม่แ
 const PROV_ALIAS_EN = { krungthepmahanakhon: 'bangkok', bangkok: 'krungthepmahanakhon' };
 
 /** pattern regex ดึงชื่อพื้นที่ (ใช้ก่อน scan fallback เสมอ) */
@@ -202,7 +202,7 @@ function loadGeoIdx_() {
     let pk = String(r[GEO_COL.POSTAL_KEY] || '').trim();
     let pc = String(r[GEO_COL.POSTAL] || '').trim();
     // [v5.5.0] normalize key รายส่วนด้วย normArea_ — ให้ index ตรงกับฝั่ง lookup เป๊ะ
-    //   แก้ dead zone กลุ่ม "เมือง...": เช่น search_key "บางโปรง|เมืองสมุทรปราการ|สมุทรปราการ"
+    //   แก้ dead zone กลุ่ม "เมือง...": เช่น search_key "บางโปรง|เมืองสมุทรปราการ|สมุทรปราการ" → "บางโปรง|สมุทรปราการ|สมุทรปราการ"
     //   เดิม (v5.4.7) index เก็บคำเต็ม แต่ lookup ผ่าน normArea_ ตัด "เมือง" ทิ้ง → EXACT3 พลาด 1,210 แถว
     //   และ postal_key "18160|เมืองเก่า" → lookup "18160|เก่า" → พลาดอีก 74 แถว
     if (sk) {
@@ -335,7 +335,7 @@ function normArea_(s) {
     .replace(/\s+/g, '').trim();
 }
 
-/** [v5.2 ENGLISH] Normalize ชื่อพื้นที่ภาษาอังกฤษ: lowercase + ตัดคำนำหน้า (Khwaeng/Khet/Tambon/Amphoe/District/Province) + ลบช่องว่าง */
+/** [v5.2 ENGLISH] Normalize ชื่อพื้นที่ภาษาอังกฤษ: lowercase + ตัดคำนำหน้า (Khwaeng/Khet/Tambon/Amphoe/District/Province) + ลบ
 function normAreaEn_(s) {
   if (!s) return '';
   return String(s).toLowerCase()
@@ -399,9 +399,9 @@ function provAliasSearchKeyEn_(skNorm, pnEn) {
 
 /**
  * geoExtract_ — ดึง ต./อ./จ./รหัส (regex ก่อน → scan fallback ตาม pattern ThGeoService)
- *   - จังหวัด: จ./จังหวัด → กทม. → คำไทยหน้ารหัส → คำไทยท้ายข้อความ (ยกเว้น ไทย/ประเทศ/ประเทศไทย)
- *   - อำเภอ: regex อ./อำเภอ/เขต → ถ้าไม่เจอ → สแกนชื่ออำเภอจริงในจังหวัดนั้น (เจอ 1 ตัวเท่านั้นถึงใช้)
- *   - ตำบล: regex ต./ตำบล/แขวง → ถ้าไม่เจอ → สแกนชื่อตำบลจริงใน จ.+อ. (เจอลำดับ 1 ถึงใช้)
+ *   - จังหวัด: จ./จังหวัด → กทม. → คำไทยหน้ารหัส → คำไทยท้ายข้อความ (ยกเว้น ไท
+ *   - อำเภอ: regex อ./อำเภอ/เขต → ถ้าไม่เจอ → สแกนชื่ออำเภอจริงในจังหวัดนั้น (เจ
+ *   - ตำบล: regex ต./ตำบล/แขวง → ถ้าไม่เจอ → สแกนชื่อตำบลจริงใน จ.+อ. (เจอลำดับ 1 ถึ
  * @returns {object} {tambon, amphoe, province, postal} (norm แล้วทั้งหมด)
  */
 function geoExtract_(text) {
@@ -422,7 +422,7 @@ function geoExtract_(text) {
     if (fb && fb[1] !== 'ไทย' && fb[1] !== 'ประเทศ' && fb[1] !== 'ประเทศไทย') p = fb[1].trim();
   }
   if (!p) {
-    // fallback สุดท้าย: คำไทย 2+ ตัวท้ายข้อความหลังตัด "ประเทศไทย/ไทย" (จังหวัดจริงเท่านั้น)
+    // fallback สุดท้าย: คำไทย 2+ ตัวท้ายข้อความหลังตัด "ประเทศไทย/ไทย" (จังหวัดจริ
     let t2 = t.replace(/(\s|^)(ประเทศไทย|ไทย|ประเทศ)(\s|$)/g, ' ').replace(/\s+$/, '');
     let m2 = t2.match(/([\u0E00-\u0E7F]{2,})\s*$/);
     if (m2 && m2[1] !== 'ไทย' && m2[1] !== 'ประเทศ' && m2[1] !== 'ประเทศไทย') p = m2[1].trim();
@@ -549,11 +549,11 @@ function geoMatch_(geoText) {
     let f2 = fuzzyBest_(na, idx.fuzzyByProv[np], 'an');
     if (f2) return { entry: f2, layer: 'AMPHOE_FUZZY' };
   }
-  // ชั้น 8: Levenshtein ตำบล (≤ 1 edit, สำหรับคำ 5+ ตัวอักษร) — แก้ typo 1 ตัวอักษร เช่น "สมุทธปราการ" → "สมุทรปราการ"
+  // ชั้น 8: Levenshtein ตำบล (≤ 1 edit, สำหรับคำ 5+ ตัวอักษร) — แก้ typo 1 ตัวอักษร เช่น "สมุทธปร
   if (nt && np && idx.fuzzyByProv[np]) {
     let f3 = levenshteinBest_(nt, idx.fuzzyByProv[np], 'tn', 1);
     // [v5.5.7 AUDIT FIX-2] เพิ่ม postalOk_ — ให้ Thai path ใช้นโยบายเดียวกับ EN path (v5.5.3)
-    //   กัน false positive คนละพื้นที่ที่ห่าง 1 ตัวอักษร เมื่อข้อความมีรหัสไปรษณีย์ขัดแย้ง
+    //   กัน false positive คนละพื้นที่ที่ห่าง 1 ตัวอักษร เมื่อข้อความมีรหัสไปรษณีย์
     if (f3 && postalOk_(f3, e.postal)) return { entry: f3, layer: 'TAMBON_LEV' };
   }
   // ชั้น 9: Levenshtein อำเภอ (≤ 1 edit, สำหรับคำ 5+ ตัวอักษร)
@@ -628,7 +628,7 @@ function geoMatchEn_(geoText) {
   }
   if (na && np && fuzzyIdx[np]) {
     let f4 = levenshteinBest_(na, fuzzyIdx[np], 'an', 1);
-    if (f4) return { entry: f4, layer: 'AMPHOE_LEV_EN' };
+    if (f4 && postalOk_(f4, e.postal)) return { entry: f4, layer: 'AMPHOE_LEV_EN' };
   }
   return null;
 }
@@ -694,7 +694,7 @@ function geoExtractEn_(text) {
 
   // [v5.5.3 FIX "Chang Wat"] ตัดคำนำหน้า "changwat" ออกจาก province (หลัง normalize แล้ว)
   //   "changwatsamutprakan" → "samutprakan" / "krungthepmahanakhon" ไม่กระทบ
-  //   ปลอดภัย: ไม่มีชื่อจังหวัดใน dict ที่ขึ้นต้นด้วย "changwat" (และก็ไม่มีตำบล/อำเภอที่ใช้ path นี้)
+  //   ปลอดภัย: ไม่มีชื่อจังหวัดใน dict ที่ขึ้นต้นด้วย "changwat" (และก็ไม่มีตำบล/อำ
   //   ผล: ชั้น EXACT3_EN / TAMBON_PROV_EN / AMPHOE_PROV_EN / FUZZY_EN / LEV_EN กลับมาใช้ได้ทุกจังหวัด
   if (out.province) {
     out.province = out.province.replace(/^chang\s*wat/, '');
@@ -755,7 +755,7 @@ function fuzzyBest_(needle, pool, field) {
 }
 
 /** [v5.5.3] postalOk_ — ยอมรับผล Levenshtein เฉพาะเมื่อรหัสไปรษณีย์ของแถว dict ตรงกับ
- *  รหัสในที่อยู่ (หรือที่อยู่ไม่มีรหัส) — กัน false positive คนละเขตที่ห่างกัน 1 ตัวอักษร
+ *  รหัสในที่อยู่ (หรือที่อยู่ไม่มีรหัส) — กัน false positive คนละเขตที่ห่างกัน 1 ต
  *  เช่น "Bang Na" (10260, ชื่อเดิมที่ Google ยังใช้) ไปชน "Bang Wa" (10160, คนละเขต)
  */
 function postalOk_(row, postal) {
@@ -824,7 +824,7 @@ function levenshteinBest_(needle, pool, field, maxDist) {
  * @param {*} dist ระยะทางจากคลัง_Km
  * @returns {object} 7 ค่า (ราชการ 4 ตัว + Reversegeocode + Calculatedistances + GEO_LAYER)
  *
- * กฎ: แมชต์พจนานุกรม → ค่ามาตรฐานจาก SYS_TH_GEO / ไม่แมชต์ → เว้นว่าง (4 ตัวราชการ)
+ * กฎ: แมชต์พจนานุกรม → ค่ามาตรฐานจาก SYS_TH_GEO / ไม่แมชต์ → เว้นว่าง (4 ตัวราชการ
  *      Reversegeocode = คัดลอกดิบ / Calculatedistances = คัดลอกระยะทางดิบ
  */
 function geoParse_(geoText, dist) {
@@ -907,7 +907,7 @@ function getGeoSourceIndex_() {
     if (!mdId) continue;
     let geoText = values[i][cols['ชื่อที่อยู่จาก_LatLong']];
     let distance = values[i][cols['ระยะทางจากคลัง_Km']];
-    // [v5.5.6 PATCH-6] จับแถว EN สะอาดล่าสุดของสถานที่นี้ไว้ (แถวที่สะอาดและใหม่กว่าจะ overwrite)
+    // [v5.5.6 PATCH-6] จับแถว EN สะอาดล่าสุดของสถานที่นี้ไว้ (แถวที่สะอาดและใหม่กว่า)
     if (geoIsCleanEnText_(geoText)) {
       cleanEnByMdId[mdId] = { geoText: String(geoText).trim(), distance: distance };
     }
@@ -956,12 +956,12 @@ function runMasterGeo(maxMs) {
   let mcols = {};
   headers.forEach(function (h, i) { if (h) mcols[h] = i; });
   ['MD_ID', 'PROVINCE', 'AMPHOE', 'CONFIRMED_BY', 'REVIEW_NOTE',
-   'Rahatpraisanee', 'Changwat', 'Amphoe_Khet', 'Tambon_Kwaeng',
-   'Reversegeocode', 'Calculatedistances', 'GEO_LAYER'].forEach(function (h) {
+    'Rahatpraisanee', 'Changwat', 'Amphoe_Khet', 'Tambon_Kwaeng',
+    'Reversegeocode', 'Calculatedistances', 'GEO_LAYER'].forEach(function (h) {
     if (mcols[h] === undefined) throw new Error('ชีต MASTER_PLACE ไม่มีหัวคอลัมน์: ' + h);
   });
 
-  // ข้อมูลสำหรับ GeoService ต้องมาจากชีตต้นทางเท่านั้น ไม่ใช้ชื่อปลายทาง/ที่อยู่ปลายทาง
+  // ข้อมูลสำหรับ GeoService ต้องมาจากชีตต้นทางเท่านั้น ไม่ใช้ชื่อปลายทาง/ที่
   let sourceIndex = getGeoSourceIndex_();   // [v5.5.6 PATCH-6]
   let source = sourceIndex.rowsByMdId;
   let cleanEnMap = sourceIndex.cleanEnByMdId;   // mdId → EN สะอาดล่าสุด (ใช้อัปเกรด Y)
@@ -1000,7 +1000,7 @@ function runMasterGeo(maxMs) {
       let geoRow;
       if (existingLayer) {
         // [v5.5.6 PATCH-6] แถวที่เติมแล้ว: แช่แข็ง U/V/W/X/AA + Y/Z ตามนโยบาย Upgrade-only
-        //   (แทนพฤติกรรมเดิม: คัดลอกที่อยู่/ระยะทาง "ล่าสุด" จาก SOURCE ทับ Y/Z ทุกครั้งที่รัน)
+        //   (แทนพฤติกรรมเดิม: คัดลอกที่อยู่/ระยะทาง "ล่าสุด" จาก SOURCE ทับ Y/Z ทุกครั
         skipped++;
         geoRow = buildSkippedGeoRow_(r, mcols, src, !!source[mdId], cleanEnMap[mdId] || null);
         if (geoIsCleanEnText_(r[mcols['Reversegeocode']])) {
@@ -1048,7 +1048,7 @@ function runMasterGeo(maxMs) {
 
 /**
  * [v5.2 ENGLISH] runMasterGeoEn — เหมือน runMasterGeo แต่ใช้ English text เป็น input
- * ใช้เมื่อ [ชื่อที่อยู่จาก_LatLong] (column V) เป็นภาษาอังกฤษ เช่น "Khwaeng Chakkrawat, Khet Samphanthawong, Bangkok 10100"
+ * ใช้เมื่อ [ชื่อที่อยู่จาก_LatLong] (column V) เป็นภาษาอังกฤษ เช่น "Khwaeng Chakkrawat, Khet Samphanthawong, Bang
  * Logic: ใช้ geoMatchEn_() แทน geoMatch_() และ geoParseEn_() แทน geoParse_()
  * ผลลัพธ์: เขียนเฉพาะ 7 คอลัมน์ U-AA (Rahatpraisanee..GEO_LAYER) เหมือน runMasterGeo ปกติ
  *   - Rahatpraisanee, Changwat, Amphoe_Khet, Tambon_Kwaeng = ค่าจาก SYS_TH_GEO (col 0,3,6,5) ไม่ใช่ English
@@ -1297,7 +1297,7 @@ function buildExistingGeoRow_(r, mcols) {
 /**
  * [v5.5.6 PATCH-6] geoIsCleanEnText_ — ตรวจว่าข้อความที่อยู่เป็น "EN สะอาด" หรือไม่
  * สะอาด = ไม่ว่าง + ยาวพอ (>=8) + ไม่มีอักษรไทย + ไม่มี Plus Code + ไม่ใช่ค่า error
- * ใช้ตัดสินนโยบาย Upgrade-only: ค่าสะอาดห้ามถูกทับ / ค่าสกปรกพร้อมอัปเกรดเมื่อมีค่าสะอาดกว่า
+ * ใช้ตัดสินนโยบาย Upgrade-only: ค่าสะอาดห้ามถูกทับ / ค่าสกปรกพร้อมอัปเกรดเมื่
  */
 function geoIsCleanEnText_(value) {
   if (value === null || value === undefined) return false;
@@ -1316,7 +1316,7 @@ function geoIsCleanEnText_(value) {
  *   - U/V/W/X/AA แช่แข็งเหมือนเดิม
  *   - Y (Reversegeocode): ค่าปัจจุบันเป็น EN สะอาด → ห้ามถูกทับเด็ดขาด (freeze)
  *     ค่าปัจจุบันเป็นขยะ (ไทย/Plus Code/GeoErr/ว่าง) → อัปเกรดด้วย cleanEn
- *     (EN สะอาดล่าสุดของสถานที่นี้จาก SOURCE) ถ้าไม่มี → คงขยะเดิมไว้ (ไม่ทับขยะด้วยขยะ)
+ *     (EN สะอาดล่าสุดของสถานที่นี้จาก SOURCE) ถ้าไม่มี → คงขยะเดิมไว้ (ไม่ทับขย
  *   - Z (Calculatedistances): เติมเฉพาะช่องว่าง (fill-don't-destroy)
  *     เว้นแต่อัปเกรด Y พร้อมกัน → เปลี่ยน Z เป็นคู่จากแถว SOURCE เดียวกับ Y ใหม่
  *   - ถ้าไม่มี SOURCE (hasSource=false) → คง Y/Z เดิมทั้งคู่ (ไม่ทำอะไรเลย)
@@ -1359,7 +1359,7 @@ function buildSkippedGeoRow_(r, mcols, src, hasSource, cleanEn) {
 }
 
 /**
- * [v5.5.6 PATCH-6] buildGeoFillRow_ — แถวที่ยังไม่มี layer (เติมใหม่ / re-parse เพราะ layer ว่าง หรือ NO_MATCH หรือ Thai layer โดน 3b)
+ * [v5.5.6 PATCH-6] buildGeoFillRow_ — แถวที่ยังไม่มี layer (เติมใหม่ / re-parse เพราะ layer ว่าง หรือ NO_MATCH หรือ
  * กันดาวน์เกรด (r, mcols เป็น optional เพื่อรองรับ caller เก่าที่ไม่ส่ง):
  *   - Y ปัจจุบันเป็น EN สะอาด แต่ค่าใหม่ที่จะเขียนไม่สะอาด → คง Y เดิม
  *   - Z ใหม่ว่าง แต่ Z เดิมมีค่า → คง Z เดิม (กันค่าหายตอน re-fill)
@@ -1370,6 +1370,7 @@ function buildGeoFillRow_(g, r, mcols) {
   if (r && mcols) {
     let yCur = r[mcols['Reversegeocode']];
     if (geoIsCleanEnText_(yCur) && !geoIsCleanEnText_(yOut)) yOut = yCur;
+    else if (!geoIsCleanEnText_(yCur) && !geoIsCleanEnText_(yOut)) yOut = '';
     let zCur = r[mcols['Calculatedistances']];
     let zBlankOut = (zOut === '' || zOut === null || zOut === undefined);
     let zHasCur = (zCur !== '' && zCur !== null && zCur !== undefined);
@@ -1459,7 +1460,7 @@ function assertRowAlignment_(expectedRows, actualRows, batchStart) {
 }
 
 /**
- * อ่าน MD_ID จากชีตหลังเขียน แล้วเทียบกับ snapshot ก่อนเขียนแบบตำแหน่งต่อ ตำแหน่ง
+ * อ่าน MD_ID จากชีตหลังเขียน แล้วเทียบกับ snapshot ก่อนเขียนแบบตำแหน่งต่อ ตำแห
  */
 function verifyMdIdsAfterWrite_(sheet, startRow, rowCount, mdIdColumn, expectedIds, context) {
   if (!sheet) throw new Error('MD_ID_VERIFY_ERROR: ไม่พบ sheet');
@@ -1528,7 +1529,7 @@ function verifyMasterMdIds_(sheet, beforeIds, firstDataRow) {
   );
 }
 
-/** สร้าง snapshot ทั้ง MASTER_PLACE ก่อนเริ่ม run */
+/** สร้าง snapshot ทั้ง MASTER_PLACE ก่อน��ริ่ม run */
 function snapshotMasterMdIds_() {
   // [v5.4.3 BUG-008 FIX] ใช้ SHEETS.MASTER แทน hard-coded
   let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEETS.MASTER);
@@ -1560,8 +1561,8 @@ function geoParseEn_(geoText, dist) {
       // [v5.5.4 PATCH-4] CHECK_NOTE + รหัสยืนยัน (English path) — หลักการเดียวกับ geoParse_
       //   ถ้ารหัสไปรษณีย์ที่ปรากฏในข้อความ reverse geocode ตรงกับรหัสของแถว dict
       //   ที่แมชต์ → เติมได้ เลเยอร์ CN_ZIP_OK_EN
-      //   ผลจริงบน 2,669 แถว: กู้คืน 157/178 แถว (88%) — เฉพาะแถวที่ชื่อตำบลปรากฏในข้อความ
-      //   แถวที่ไม่มีชื่อตำบลเลย (ตำบลต้องเดา) ยังบล็อกไว้ เพราะเป็นการเดา ไม่ใช่การยืนยัน
+      //   ผลจริงบน 2,669 แถว: กู้คืน 157/178 แถว (88%) — เฉพาะแถวที่ชื่อตำบลปรากฏในข้อคว
+      //   แถวที่ไม่มีชื่อตำบลเลย (ตำบลต้องเดา) ยังบล็อกไว้ เพราะเป็นการเดา [
       let peCn = geoExtractEn_(geoText);
       if (peCn && peCn.postal &&
           String(row[GEO_COL.POSTAL] || '').trim() === String(peCn.postal).trim()) {
@@ -1587,7 +1588,7 @@ function geoParseEn_(geoText, dist) {
     out.tambon_kwaeng = String(row[GEO_COL.TAMBON_CLEAN] || '');
     out.geoLayer = m.layer;
   }
-  out.reversegeocode = String(geoText || '');
+  out.reversegeocode = geoIsCleanEnText_(geoText) ? String(geoText || '') : '';
   // [v5.3.1] bug fix: ค่า 0 หาย — ใช้ explicit check (0 || '' ให้ '' เพราะ 0 เป็น falsy)
   out.calculatedistances = (dist === 0 || dist === '0') ? 0 : ((dist !== undefined && dist !== null && dist !== '') ? dist : '');
   return out;
@@ -1691,12 +1692,12 @@ function uiDiagnoseGeoKeys() {
  * ไม่แตะคอลัมน์อื่นเลย (MD_ID/NAME/LAT/LNG/... คงเดิมทั้งหมด)
  *
  * ทำไมต้องมี: runMasterGeo / runMasterGeoEn เว้นแถวที่มี GEO_LAYER อยู่แล้ว (กันทับค่ามือ)
- *   แถวที่เติมผิดตั้งแต่รอบรันเก่า (ก่อน v5.5.3) จะไม่ถูกแก้ จนกว่าจะล้างเลเยอร์เดิม
+ *   แถวที่เติมผิดตั้งแต่รอบรันเก่า (ก่อน v5.5.3) จะไม่ถูกแก้ จนกว่าจะล้างเล
  *
  * วิธีใช้ (ครั้งเดียวพอ หลังวางไฟล์นี้):
- *   1) รันฟังก์ชันนี้จากเมนู "ดูผล / รีเซ็ต" (เพิ่มบรรทัดใน 03_Menu.gs ตามด้านล่าง) หรือรันจาก Editor
+ *   1) รันฟังก์ชันนี้จากเมนู "ดูผล / รีเซ็ต" (เพิ่มบรรทัดใน 03_Menu.gs ตามด้านล่าง)
  *   2) กดปุ่ม 3b) เติม 7 คอลัมน์ราชการ (English) ใหม่ทั้งชีต
- *   3) เทียบผลกับชีต "03_ค่าที่จะเปลี่ยน" ในรายงานวิเคราะห์ (187 แถว: เติมใหม่ 158 / แก้ตำบล 24 / แก้รหัส+ตำบล 5)
+ *   3) เทียบผลกับชีต "03_ค่าที่จะเปลี่ยน" ในรายงานวิเคราะห์ (187 แถว: เติมใหม่ 15
  *
  * เพิ่มใน 03_Menu.gs (ใน submenu "ดูผล / รีเซ็ต" ได้เลย):
  *   .addItem('🧹 ล้างเฉพาะ 7 คอลัมน์ราชการ (U-AA)', 'uiClearGeoColumnsOnly')
@@ -1732,11 +1733,11 @@ function uiClearGeoColumnsOnly() {
     ui.ButtonSet.YES_NO);
   if (res !== ui.Button.YES) return;
 
-  // ล้างทีละคอลัมน์ (เขียน '' ทับ) — กัน quota ด้วยการเขียนเป็น range ก้อนใหญ่ต่อคอลัมน์
+  // ล้างทีละคอลัมน์ (เขียน '' ทับ) — กัน quota ด้วยการเขียนเป็น range ก้อนใหญ่ต่อค
   cols7.forEach(function (h) {
     sh.getRange(2, idx[h] + 1, lastRow - 1, 1).clearContent();
   });
   // ล้าง geo dict cache ด้วย เพื่อโหลด dict ใหม่ในรอบถัดไป
   try { clearThGeoCache(); } catch (e) { /* ฟังก์ชันอาจไม่อยู่ — ไม่เป็นไร */ }
-  ui.alert('✅ ล้างครบ 7 คอลัมน์แล้ว (' + (lastRow - 1) + ' แถว)\nต่อไปกดปุ่ม 3b) เติม 7 คอลัมน์ราชการ (English)');
+  ui.alert('✅ ล้างครบ 7 คอลัมน์แล้ว (' + (lastRow - 1) + ' แถว)\nต่อไปกดปุ่ม 3b) เติม 7 คอลัมน์ราช
 }
